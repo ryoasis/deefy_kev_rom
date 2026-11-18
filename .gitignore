@@ -1,4 +1,5 @@
 .idea/
-*.ini
 *.mp3
 *.wav
+config/db.ini
+*.ini
