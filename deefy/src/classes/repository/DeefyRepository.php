@@ -12,16 +12,11 @@ class DeefyRepository
 
     private function __construct(array $conf)
     {
-        $this->pdo = new \PDO(
-            $conf['dsn'],
-            $conf['user'],
-            $conf['pass'],
-            [
-                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-                \PDO::ATTR_EMULATE_PREPARES => false,
-                \PDO::ATTR_STRINGIFY_FETCHES => false,
-            ]
-        );
+        $this->pdo = new \PDO($conf['dsn'], $conf['user'], $conf['pass'], [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            \PDO::ATTR_EMULATE_PREPARES => false,
+            \PDO::ATTR_STRINGIFY_FETCHES => false,
+        ]);
         $this->pdo->prepare("SET NAMES 'UTF8'")->execute();
     }
 
@@ -31,7 +26,6 @@ class DeefyRepository
         if ($conf === false) {
             throw new \Exception('Erreur de lecture du fichier de configuration');
         }
-
         self::$config = [
             'dsn' => "{$conf['driver']}:host={$conf['host']};dbname={$conf['database']};charset=utf8",
             'user' => $conf['username'],
@@ -44,7 +38,6 @@ class DeefyRepository
         if (is_null(self::$instance)) {
             self::$instance = new DeefyRepository(self::$config);
         }
-
         return self::$instance;
     }
 
@@ -52,8 +45,19 @@ class DeefyRepository
     {
         $stmt = $this->pdo->prepare('INSERT INTO playlist (nom) VALUES (:nom)');
         $stmt->execute(['nom' => $pl->nom]);
-        $pl->setId((int) $this->pdo->lastInsertId());
-
+        $pl->setId((int)$this->pdo->lastInsertId());
         return $pl;
+    }
+
+    public function findAllPlaylists(): array
+    {
+        $stmt = $this->pdo->query('SELECT id, nom FROM playlist ORDER BY nom');
+        $playlists = [];
+        while ($row = $stmt->fetch()) {
+            $pl = new Playlist($row['nom']);
+            $pl->setId((int)$row['id']);
+            $playlists[] = $pl;
+        }
+        return $playlists;
     }
 }
