@@ -1,5 +1,5 @@
 .idea/
 *.mp3
 *.wav
-config/db.ini
+deefy/config/db.ini
 *.ini
